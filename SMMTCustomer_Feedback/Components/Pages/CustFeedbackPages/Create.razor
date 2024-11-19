@@ -1,0 +1,54 @@
+﻿@page "/custfeedbacks/create"
+@using Microsoft.EntityFrameworkCore
+@using SMMTCustomer_Feedback.Models
+@inject IDbContextFactory<SMMTCustomer_Feedback.Data.ApplicationDbContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Create</PageTitle>
+
+<h1>Create</h1>
+
+<h2>CustFeedback</h2>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <EditForm method="post" Model="CustFeedback" OnValidSubmit="AddCustFeedback" FormName="create" Enhance>
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" role="alert"/>
+            <div class="mb-3">
+                <label for="customername" class="form-label">CustomerName:</label> 
+                <InputText id="customername" @bind-Value="CustFeedback.CustomerName" class="form-control" aria-required="true"/> 
+                <ValidationMessage For="() => CustFeedback.CustomerName" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="feedbackmessage" class="form-label">FeedbackMessage:</label> 
+                <InputText id="feedbackmessage" @bind-Value="CustFeedback.FeedbackMessage" class="form-control" aria-required="true"/> 
+                <ValidationMessage For="() => CustFeedback.FeedbackMessage" class="text-danger" /> 
+            </div>        
+            @* <div class="mb-3">
+                <label for="datesubmitted" class="form-label">DateSubmitted:</label> 
+                <InputDate id="datesubmitted" @bind-Value="CustFeedback.DateSubmitted" class="form-control" /> 
+                <ValidationMessage For="() => CustFeedback.DateSubmitted" class="text-danger" /> 
+            </div>  *@       
+            <button type="submit" class="btn btn-primary">Create</button>
+        </EditForm>
+    </div>
+</div>
+
+<div>
+    <a href="/custfeedbacks">Back to List</a>
+</div>
+
+@code {
+    [SupplyParameterFromForm]
+    private CustFeedback CustFeedback { get; set; } = new();
+
+    // To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+    private async Task AddCustFeedback()
+    {
+        using var context = DbFactory.CreateDbContext();
+        context.CustFeedback.Add(CustFeedback);
+        await context.SaveChangesAsync();
+        NavigationManager.NavigateTo("/custfeedbacks");
+    }
+}

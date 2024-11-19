@@ -1,0 +1,99 @@
+﻿@page "/custfeedbacks/edit"
+@using Microsoft.EntityFrameworkCore
+@using SMMTCustomer_Feedback.Models
+@inject IDbContextFactory<SMMTCustomer_Feedback.Data.ApplicationDbContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Edit</PageTitle>
+
+<h1>Edit</h1>
+
+<h2>CustFeedback</h2>
+<hr />
+@if (CustFeedback is null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-4">
+            <EditForm method="post" Model="CustFeedback" OnValidSubmit="UpdateCustFeedback" FormName="edit" Enhance>
+                <DataAnnotationsValidator />
+                <ValidationSummary role="alert"/>
+                <input type="hidden" name="CustFeedback.FeedbackID" value="@CustFeedback.FeedbackID" />
+                <div class="mb-3">
+                    <label for="customername" class="form-label">CustomerName:</label>
+                    <InputText id="customername" @bind-Value="CustFeedback.CustomerName" class="form-control" aria-required="true"/>
+                    <ValidationMessage For="() => CustFeedback.CustomerName" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="feedbackmessage" class="form-label">FeedbackMessage:</label>
+                    <InputText id="feedbackmessage" @bind-Value="CustFeedback.FeedbackMessage" class="form-control" aria-required="true"/>
+                    <ValidationMessage For="() => CustFeedback.FeedbackMessage" class="text-danger" />
+                </div>
+               @*  <div class="mb-3">
+                    <label for="datesubmitted" class="form-label">DateSubmitted:</label>
+                    <InputDate id="datesubmitted" @bind-Value="CustFeedback.DateSubmitted" class="form-control" />
+                    <ValidationMessage For="() => CustFeedback.DateSubmitted" class="text-danger" />
+                </div> *@
+                <button type="submit" class="btn btn-primary">Save</button>
+            </EditForm>
+        </div>
+    </div>
+}
+
+<div>
+    <a href="/custfeedbacks">Back to List</a>
+</div>
+
+@code {
+    [SupplyParameterFromQuery]
+    private int FeedbackID { get; set; }
+
+    [SupplyParameterFromForm]
+    private CustFeedback? CustFeedback { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        CustFeedback ??= await context.CustFeedback.FirstOrDefaultAsync(m => m.FeedbackID == FeedbackID);
+
+        if (CustFeedback is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+
+    // To protect from overposting attacks, enable the specific properties you want to bind to.
+    // For more information, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+    private async Task UpdateCustFeedback()
+    {
+        using var context = DbFactory.CreateDbContext();
+        context.Attach(CustFeedback!).State = EntityState.Modified;
+
+        try
+        {
+            await context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            if (!CustFeedbackExists(CustFeedback!.FeedbackID))
+            {
+                NavigationManager.NavigateTo("notfound");
+            }
+            else
+            {
+                throw;
+            }
+        }
+
+        NavigationManager.NavigateTo("/custfeedbacks");
+    }
+
+    private bool CustFeedbackExists(int feedbackid)
+    {
+        using var context = DbFactory.CreateDbContext();
+        return context.CustFeedback.Any(e => e.FeedbackID == feedbackid);
+    }
+}

@@ -1,0 +1,50 @@
+﻿@page "/custfeedbacks/details"
+@using Microsoft.EntityFrameworkCore
+@using SMMTCustomer_Feedback.Models
+@inject IDbContextFactory<SMMTCustomer_Feedback.Data.ApplicationDbContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Details</PageTitle>
+
+<h1>Details</h1>
+
+<div>
+    <h2>CustFeedback</h2>
+    <hr />
+    @if (custfeedback is null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else {
+        <dl class="row">
+            <dt class="col-sm-2">CustomerName</dt>
+            <dd class="col-sm-10">@custfeedback.CustomerName</dd>
+            <dt class="col-sm-2">FeedbackMessage</dt>
+            <dd class="col-sm-10">@custfeedback.FeedbackMessage</dd>
+            <dt class="col-sm-2">DateSubmitted</dt>
+            <dd class="col-sm-10">@custfeedback.DateSubmitted</dd>
+        </dl>
+        <div>
+            <a href="@($"/custfeedbacks/edit?feedbackid={custfeedback.FeedbackID}")">Edit</a> |
+            <a href="@($"/custfeedbacks")">Back to List</a>
+        </div>
+    }
+</div>
+
+@code {
+    private CustFeedback? custfeedback;
+
+    [SupplyParameterFromQuery]
+    private int FeedbackID { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        custfeedback = await context.CustFeedback.FirstOrDefaultAsync(m => m.FeedbackID == FeedbackID);
+
+        if (custfeedback is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+}

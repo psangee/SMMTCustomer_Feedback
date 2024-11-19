@@ -1,0 +1,55 @@
+﻿@page "/custfeedbacks"
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using SMMTCustomer_Feedback.Models
+@using SMMTCustomer_Feedback.Data
+
+@implements IAsyncDisposable
+@inject IDbContextFactory<SMMTCustomer_Feedback.Data.ApplicationDbContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Index</PageTitle>
+
+<h1>Index</h1>
+
+<p>
+    <a href="custfeedbacks/create">Create New</a>
+</p>
+
+<QuickGrid Class="table" Items="context.CustFeedback">
+    <PropertyColumn Property="custfeedback => custfeedback.CustomerName" />
+    <PropertyColumn Property="custfeedback => custfeedback.FeedbackMessage" />
+    <PropertyColumn Property="custfeedback => custfeedback.DateSubmitted" />
+
+    <TemplateColumn Context="custfeedback">
+        <a href="@($"custfeedbacks/edit?feedbackid={custfeedback.FeedbackID}")">Edit</a> |
+        <a href="@($"custfeedbacks/details?feedbackid={custfeedback.FeedbackID}")">Details</a> |
+        <a href="@($"custfeedbacks/delete?feedbackid={custfeedback.FeedbackID}")">Delete</a>
+    </TemplateColumn>
+</QuickGrid>
+
+
+@code {
+
+    IQueryable<CustFeedback> custFeedbacks;
+    IList<CustFeedback> selectedFeedbacks;
+
+
+    private ApplicationDbContext context = default!;
+    private bool authenticated;
+    [CascadingParameter] protected Task<AuthenticationState> AuthStat { get; set; }
+
+    protected async override Task OnInitializedAsync()
+    {
+        base.OnInitialized();
+        var user = (await AuthStat).User;
+        if (!user.Identity.IsAuthenticated)
+        {
+            NavigationManager.NavigateTo($"account/login?returnUrl={Uri.EscapeDataString(NavigationManager.Uri)}");
+        }
+        context = DbFactory.CreateDbContext();
+
+    }
+
+    public async ValueTask DisposeAsync() { }
+}
